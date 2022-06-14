@@ -38,6 +38,7 @@ namespace Nstar.Service
 
             services.AddControllers();
             services.AddTransient<IPtNetService, PtNetManager>();
+            services.AddTransient<IUserService, UserManager>();
 
             services.AddCors();
             services.AddCors(options =>
