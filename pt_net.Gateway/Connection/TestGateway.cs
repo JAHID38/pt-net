@@ -70,7 +70,7 @@ namespace pt_net.Gateway.Connection
         {
             try
             {
-                Query = @"select * from tbl_user";
+                Query = @"select * from tbl_user ORDER BY id DESC";
                 Command.CommandText = Query;
                 Command.Parameters.Clear();
                 Connection.Open();
