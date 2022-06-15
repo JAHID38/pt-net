@@ -89,6 +89,7 @@ namespace pt_net.Gateway.Connection
                         createDate = Convert.ToDateTime(Reader["create_date"]),
                         updateDate = Convert.ToDateTime(Reader["update_date"])
                     };
+                    user.statusCode = (user.status == 1) ? "ACTIVE" : "INACTIVE";
                     users.Add(user);
                 }
                 Reader.Close();

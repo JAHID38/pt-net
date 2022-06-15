@@ -24,6 +24,20 @@ namespace pt_net.Service.Controllers.UserController
         {
             return userService.userList();
         }
+        
+        [Route("/api/user/list/active")]
+        [HttpGet]
+        public List<User> activeUserList()
+        {
+            return userService.userList().FindAll(u => u.status.Equals(1));
+        }
+        
+        [Route("/api/user")]
+        [HttpGet]
+        public User user(int id)
+        {
+            return userService.user(id);
+        }
 
         [Route("/api/save/user")]
         [HttpPost]
@@ -36,10 +50,14 @@ namespace pt_net.Service.Controllers.UserController
 
         [Route("/api/add/user")]
         [HttpPost]
-        public User add (User user)
+        public User add (string name)
         {
+            User user = new User()
+            {
+                name = name,
+                status = 1
+            };
             //user status =  1: ACTIVE
-            user.status = 1;
             return (string.IsNullOrEmpty(user.name)) ? null : userService.addUser(user);
         }
     }
