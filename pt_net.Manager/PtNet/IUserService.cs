@@ -9,6 +9,7 @@ namespace pt_net.Manager.PtNet
     {
         public int save(User user);
         public User addUser(User user);
+        public User authenticate(User user);
         public List<User> userList();
         public User user(int id);
     }

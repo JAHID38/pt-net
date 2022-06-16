@@ -9,6 +9,8 @@ namespace pt_net.Entity.EntityModels
     {
         public int? id { get; set; }
         public string name { get; set; }
+        public string username { get; set; }
+        public string password { get; set; }
         public int status { get; set; }
         public string statusCode { get; set; }
         public DateTime createDate { get; set; }

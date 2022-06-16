@@ -15,6 +15,11 @@ namespace pt_net.Manager.PtNet
             return gateway.addUser(user);
         }
 
+        public User authenticate(User user)
+        {
+            return gateway.authenticate(user);
+        }
+
         public int save(User user)
         {
             return gateway.saveUser(user);

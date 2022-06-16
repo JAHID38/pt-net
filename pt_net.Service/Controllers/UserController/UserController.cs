@@ -1,21 +1,43 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using pt_net.Entity.EntityModels;
+using pt_net.Entity.Utility;
 using pt_net.Manager.PtNet;
 using System.Collections.Generic;
 
 namespace pt_net.Service.Controllers.UserController
 {
+    [Authorize]
+    [Route("api/[controller]")]
+    [ApiController]
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
         private readonly IWebHostEnvironment _hostEnvironment;
+        private readonly IJWTManagerRepository _jWTManager;
 
-        public UserController(IWebHostEnvironment hostEnvironment, IUserService _userService)
+
+        public UserController(IWebHostEnvironment hostEnvironment, IUserService _userService, IJWTManagerRepository jWTManager)
         {
             this._hostEnvironment = hostEnvironment;
             userService = _userService;
+            this._jWTManager = jWTManager;
 
+        }
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("authenticate")]
+        public IActionResult Authenticate(User usersdata)
+        {
+            var token = _jWTManager.Authenticate(usersdata);
+
+            if (token == null)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(token);
         }
 
         [Route("/api/user/list")]
@@ -50,15 +72,22 @@ namespace pt_net.Service.Controllers.UserController
 
         [Route("/api/add/user")]
         [HttpPost]
+        [AllowAnonymous]
         public User add (string name)
         {
-            User user = new User()
+            User user = null;
+            if (!string.IsNullOrEmpty(name))
             {
-                name = name,
-                status = 1
-            };
+                user = new User()
+                {
+                    name = name,
+                    status = 1,
+                    password = MD5.CreateMD5("2022")
+                };
+            }
+            
             //user status =  1: ACTIVE
-            return (string.IsNullOrEmpty(user.name)) ? null : userService.addUser(user);
+            return userService.addUser(user);
         }
     }
 
