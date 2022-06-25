@@ -2,6 +2,7 @@
 using pt_net.Gateway.Connection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace pt_net.Manager.PtNet
@@ -27,7 +28,12 @@ namespace pt_net.Manager.PtNet
 
         public User user(int id)
         {
-            return userList().Find(x=>x.id == id);
+            return userList().Where(x=>x.id == id).FirstOrDefault();
+        }
+
+        public User user(string username)
+        {
+            return userList().Where(u => u.username.ToLower().Trim().Equals(username)).FirstOrDefault();
         }
 
         public  List<User> userList()

@@ -41,7 +41,7 @@ namespace Nstar.Service
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "API Trial",
+                    Title = "Beraten API Trial",
                     Version = "v1"
                 });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()

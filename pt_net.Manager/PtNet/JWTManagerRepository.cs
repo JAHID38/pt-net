@@ -29,14 +29,23 @@ namespace pt_net.Manager.PtNet
 		}
 		public Tokens Authenticate(User users)
 		{
-			//if (!UsersRecords.Any(x => x.Key == users.name && x.Value == users.password))
-			//{
-			//	return null;
-			//}
+			/*
+			 * No user exists with this USERNAME
+			 */
+			if (userService.user(users.username) == null)
+            {
+				return new Tokens { Token = "not_found"};
+            }
 
 			User userDetails = userService.authenticate(users);
 			if (userDetails == null)
+            {
 				return null;
+			}
+			else if (userDetails.status == 0)
+            {
+				return new Tokens { Token = "inactive" };
+            }
 
 			// Else we generate JSON Web Token
 			var tokenHandler = new JwtSecurityTokenHandler();

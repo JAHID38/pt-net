@@ -12,5 +12,6 @@ namespace pt_net.Manager.PtNet
         public User authenticate(User user);
         public List<User> userList();
         public User user(int id);
+        public User user(string username);
     }
 }

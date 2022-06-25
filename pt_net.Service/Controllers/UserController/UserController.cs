@@ -5,13 +5,17 @@ using pt_net.Entity.EntityModels;
 using pt_net.Entity.Utility;
 using pt_net.Manager.PtNet;
 using System.Collections.Generic;
+using System.Linq;
+using CoreApiResponse;
+using System.Net;
+using System;
 
 namespace pt_net.Service.Controllers.UserController
 {
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
         private readonly IUserService userService;
         private readonly IWebHostEnvironment _hostEnvironment;
@@ -21,73 +25,93 @@ namespace pt_net.Service.Controllers.UserController
         public UserController(IWebHostEnvironment hostEnvironment, IUserService _userService, IJWTManagerRepository jWTManager)
         {
             this._hostEnvironment = hostEnvironment;
-            userService = _userService;
+            this.userService = _userService;
             this._jWTManager = jWTManager;
-
         }
+
         [AllowAnonymous]
         [HttpPost]
         [Route("authenticate")]
         public IActionResult Authenticate(User usersdata)
         {
-            var token = _jWTManager.Authenticate(usersdata);
+            Tokens token = _jWTManager.Authenticate(usersdata);
 
             if (token == null)
             {
-                return Unauthorized();
+                //return Unauthorized();
+                return CustomResult("Incorrect Credentials!", HttpStatusCode.Unauthorized);
             }
-
-            return Ok(token);
+            else
+            {
+                if (token.Token.Equals("not_found"))
+                {
+                    return CustomResult("No user found with: " +usersdata.username, HttpStatusCode.NotFound);
+                }
+                else if (token.Token.Equals("inactive"))
+                {
+                    return CustomResult("Inactive user: " + usersdata.username, HttpStatusCode.BadRequest);
+                }
+            }
+            return CustomResult("Authentication Successful", token, HttpStatusCode.OK);
         }
 
-        [Route("/api/user/list")]
+        [Route("user/list")]
         [HttpGet]
-        public List<User> userList()
+        public  IActionResult userList()
         {
-            return userService.userList();
+            try
+            {
+                return CustomResult(userService.userList(), HttpStatusCode.OK);
+            }
+            catch(Exception ex)
+            {
+                return CustomResult(ex.Message, HttpStatusCode.Unauthorized);
+            }
         }
         
-        [Route("/api/user/list/active")]
+        [Route("user/list/active")]
         [HttpGet]
-        public List<User> activeUserList()
+        public IActionResult activeUserList()
         {
-            return userService.userList().FindAll(u => u.status.Equals(1));
-        }
-        
-        [Route("/api/user")]
-        [HttpGet]
-        public User user(int id)
-        {
-            return userService.user(id);
+            return CustomResult(userService.userList().Where(u => u.status.Equals(1)), HttpStatusCode.OK);
         }
 
-        [Route("/api/save/user")]
-        [HttpPost]
-        public int save (User user)
+        [Route("user")]
+        [HttpGet]
+        public IActionResult user(int id)
         {
-            //user status =  1: ACTIVE
-            user.status = 1;
-            return (string.IsNullOrEmpty(user.name)) ? -1 : userService.save(user);
+            User user = userService.user(id);
+            if (user == null)
+            {
+                return CustomResult("No user found with ID: " + id, HttpStatusCode.NotFound);
+                //return NotFound("No User Found with ID: "+ id);
+            }
+            return CustomResult(user, HttpStatusCode.OK);
         }
 
-        [Route("/api/add/user")]
+
+        [Route("add/user")]
         [HttpPost]
         [AllowAnonymous]
-        public User add (string name)
+        public IActionResult add (User payload)
         {
+            if (userService.user(payload.name) != null)
+            {
+                return CustomResult(payload.name +" already exists!", HttpStatusCode.Conflict);
+            }
             User user = null;
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(payload.name))
             {
                 user = new User()
                 {
-                    name = name,
+                    name = payload.name,
                     status = 1,
-                    password = MD5.CreateMD5("2022")
+                    password = MD5.CreateMD5(payload.password.Trim())
                 };
             }
             
             //user status =  1: ACTIVE
-            return userService.addUser(user);
+            return Created("created", userService.addUser(user));
         }
     }
 
